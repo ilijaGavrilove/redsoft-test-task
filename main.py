@@ -238,3 +238,46 @@ def get_friends(person_id: int):
     ]
 
     return friends
+
+@app.delete("/people/{person_id}")
+def delete_person(person_id: int):
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+
+    cursor.execute("""
+    SELECT * FROM people
+    WHERE id = ?
+    """, (person_id,))
+
+    person = cursor.fetchone()
+
+    if not person:
+        raise HTTPException(status_code=404, detail="Person not found")
+
+    cursor.execute("""
+    SELECT * FROM friendships
+    WHERE person_id = ?
+    """, (person_id,))
+
+    friendships = cursor.fetchall()
+
+    if friendships:
+        for friendship in friendships:
+            cursor.execute("DELETE FROM friendships WHERE person_id = ?", (friendship[0],))
+            conn.commit()
+
+    cursor.execute("""
+        SELECT * FROM emails
+        WHERE person_id = ?
+        """, (person_id,))
+
+    emails = cursor.fetchall()
+
+    if emails:
+        for email in emails:
+            cursor.execute("DELETE FROM friendships WHERE person_id = ?", (email[2],))
+            conn.commit()
+
+    cursor.execute("DELETE FROM people WHERE id = ?", (person_id,))
+    conn.commit()
+    conn.close()
