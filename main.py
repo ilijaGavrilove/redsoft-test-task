@@ -275,7 +275,7 @@ def delete_person(person_id: int):
 
     if emails:
         for email in emails:
-            cursor.execute("DELETE FROM friendships WHERE person_id = ?", (email[2],))
+            cursor.execute("DELETE FROM emails WHERE person_id = ?", (email[2],))
             conn.commit()
 
     cursor.execute("DELETE FROM people WHERE id = ?", (person_id,))
