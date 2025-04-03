@@ -26,7 +26,7 @@ def init_db():
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         email TEXT UNIQUE NOT NULL,
         person_id INTEGER,
-        FOREIGN KEY(person_id) REFERENCES people(id)
+        FOREIGN KEY(person_id) REFERENCES people(id) ON DELETE CASCADE
     )
     ''')
     cursor.execute('''
@@ -34,8 +34,8 @@ def init_db():
             person_id INTEGER,
             friend_id INTEGER,
             PRIMARY KEY (person_id, friend_id),
-            FOREIGN KEY(person_id) REFERENCES people(id),
-            FOREIGN KEY(friend_id) REFERENCES people(id)
+            FOREIGN KEY(person_id) REFERENCES people(id) ON DELETE CASCADE,
+            FOREIGN KEY(friend_id) REFERENCES people(id) ON DELETE CASCADE
         )
         ''')
     conn.commit()
@@ -253,30 +253,6 @@ def delete_person(person_id: int):
 
     if not person:
         raise HTTPException(status_code=404, detail="Person not found")
-
-    cursor.execute("""
-    SELECT * FROM friendships
-    WHERE person_id = ?
-    """, (person_id,))
-
-    friendships = cursor.fetchall()
-
-    if friendships:
-        for friendship in friendships:
-            cursor.execute("DELETE FROM friendships WHERE person_id = ?", (friendship[0],))
-            conn.commit()
-
-    cursor.execute("""
-        SELECT * FROM emails
-        WHERE person_id = ?
-        """, (person_id,))
-
-    emails = cursor.fetchall()
-
-    if emails:
-        for email in emails:
-            cursor.execute("DELETE FROM emails WHERE person_id = ?", (email[2],))
-            conn.commit()
 
     cursor.execute("DELETE FROM people WHERE id = ?", (person_id,))
     conn.commit()
