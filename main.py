@@ -4,7 +4,7 @@ from typing import List
 from validation import EmailSchema, PersonResponse, PersonCreate, FriendshipCreate, PersonUpdate
 import requests
 
-# Database setup
+# Структура БД
 db_path = "people.db"
 
 
@@ -42,16 +42,16 @@ def init_db():
     conn.close()
 
 
-# App setup
+# Инициализация приложения
 app = FastAPI()
 
-
+# Создание БД
 @app.on_event("startup")
 def startup_event():
     init_db()
 
 
-# Utility functions
+# Запросы к сторонним ресурам
 def fetch_external_data(name: str):
     age_response = requests.get(f"https://api.agify.io/?name={name}")
     gender_response = requests.get(f"https://api.genderize.io/?name={name}")
